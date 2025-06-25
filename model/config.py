@@ -29,6 +29,7 @@ class GPTNeoWithSelfAblationConfig:
         reconstruction_loss_type="MSE",
         ablation_processing="soft-top-P-version-1",
         device=None,
+        p = False,
     ):
         self.top_k_epsilon = top_k_epsilon
         self.vocab_size = vocab_size
@@ -49,6 +50,7 @@ class GPTNeoWithSelfAblationConfig:
         self.has_overall_ablation_mask = has_overall_ablation_mask
         self.reconstruction_loss_type = reconstruction_loss_type
         self.ablation_processing = ablation_processing
+        self.p = p
         
         # Loss calculation parameters
         self.loss_coeff_base = loss_coeff_base

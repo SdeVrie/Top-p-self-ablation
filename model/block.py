@@ -67,8 +67,13 @@ class GPTNeoBlockWithSelfAblation(HookedRootModule):
         else:
             raise ValueError(f"unknown ablation_processing value {self.config.ablation_processing}")
         
-        attn_ablation = top_k_fn(attn_ablation_scores, self.config.k_attention, self.config.temperature_attention, eps=self.config.top_k_epsilon)
-        neuron_ablation = top_k_fn(neuron_ablation_scores, self.config.k_neurons, self.config.temperature_neurons, eps=self.config.top_k_epsilon)
+        if self.config.p:
+            attn_ablation, attn_k = top_k_fn(attn_ablation_scores, self.config.k_attention, self.config.temperature_attention, eps=self.config.top_k_epsilon)
+            neuron_ablation, neuron_k = top_k_fn(neuron_ablation_scores, self.config.k_neurons, self.config.temperature_neurons, eps=self.config.top_k_epsilon)
+        else:
+            attn_ablation = top_k_fn(attn_ablation_scores, self.config.k_attention, self.config.temperature_attention, eps=self.config.top_k_epsilon)
+            neuron_ablation= top_k_fn(neuron_ablation_scores, self.config.k_neurons, self.config.temperature_neurons, eps=self.config.top_k_epsilon)
+        
 
         # Process x_clean
         attn_output_clean = self.attn(self.ln_1(x_clean), self.ln_1(x_clean))
@@ -85,6 +90,8 @@ class GPTNeoBlockWithSelfAblation(HookedRootModule):
         x_clean = self.mlp_hook(x_clean)
 
         outputs = dict()
+        if self.config.p:
+            outputs["k"] = [attn_k, neuron_k]
         outputs["x_ablated"] = None if is_preliminary_pass else x_ablated
         outputs["x_clean"] = x_clean
         outputs["attention_ablations"] = attn_ablation

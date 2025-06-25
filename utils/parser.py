@@ -10,6 +10,7 @@ def return_parser():
     parser.add_argument('--has_overall_ablation_mask', action='store_true')
     parser.add_argument('--loss_coeff_base', type=float)
     parser.add_argument('--loss_coeff_ablated', type=float)
+    parser.add_argument('--p', action='store_true')
     
     return parser
     

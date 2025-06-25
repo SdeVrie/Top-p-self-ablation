@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .block import GPTNeoBlockWithSelfAblation
+import numpy as np
 
 from transformer_lens.hook_points import HookPoint, HookedRootModule
 
@@ -29,6 +30,8 @@ class GPTNeoWithSelfAblation(HookedRootModule):
             
             self.attn_ablation_hook = HookPoint()
             self.neuron_ablation_hook = HookPoint()
+
+        self.k_list = []
 
         # Tie weights
         self.transformer.wte.weight = self.lm_head.weight
@@ -95,6 +98,9 @@ class GPTNeoWithSelfAblation(HookedRootModule):
                                   is_preliminary_pass=is_preliminary_pass,
                                   overall_attention_ablation_scores=block_attn_scores,
                                   overall_neuron_ablation_scores=block_neuron_scores)
+            if self.config.p:
+                k_ablated = block_outputs['k']
+                self.k_list.append(np.mean(k_ablated))
             x_ablated = block_outputs["x_ablated"]
             x_clean = block_outputs["x_clean"]
             attn_ablations_list.append(block_outputs["attention_ablations"])
@@ -153,6 +159,12 @@ class GPTNeoWithSelfAblation(HookedRootModule):
                 "loss_ablated": loss_ablated,
                 "reconstruction_loss": avg_reconstruction_loss,
             })
+
+            if self.config.p == True:
+                outputs.update({
+                    "effective_k": np.mean(self.k_list)
+            })
+        
 
         if is_preliminary_pass:
             

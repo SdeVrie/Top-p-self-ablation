@@ -1,3 +1,7 @@
+import os    
+os.environ['CUDA_DEVICE_ORDER']='PCI_BUS_ID'
+os.environ['CUDA_VISIBLE_DEVICES']='x'
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -42,6 +46,7 @@ def train_gptneo(model, config, model_name=None):
         # Forward pass
         train_outputs = model(x, targets=y)
         loss = train_outputs['loss']
+        print('k: ', train_outputs['effective_k'])
         # Backward pass
         optimizer.zero_grad()
         loss.backward()

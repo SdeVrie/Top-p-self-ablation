@@ -17,7 +17,7 @@ def hard_top_p(x, p):
         selected_indices = sorted_indices[:k]
         out[i].scatter_(0, selected_indices, 1.0)
 
-    return out.view(original_shape)
+    return out.view(original_shape), k
 
 
 def soft_top_p(x, p, temperature=1.0, eps=None):
@@ -47,11 +47,11 @@ def soft_top_p(x, p, temperature=1.0, eps=None):
 
         out[i] = weights
 
-    return out.view(original_shape)
+    return out.view(original_shape), k
 
 
 def hard_top_p_with_soft_gradient(x, p, temperature=1.0, eps=None):
     """Hard top-p WTA with soft gradients (straight-through)."""
-    hard = hard_top_p(x, p)
+    hard, k = hard_top_p(x, p)
     soft = soft_top_p(x, p, temperature=temperature, eps=eps)
-    return hard - soft.detach() + soft
+    return hard - soft.detach() + soft, k
